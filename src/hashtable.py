@@ -34,13 +34,12 @@ class HashTable:
         '''
         pass
 
-
     def _hash_mod(self, key):
         '''
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
         '''
-        return self._hash(key) % self.capacity
+        return self._hash(key)  % self.capacity
 
 
     def insert(self, key, value):
@@ -51,7 +50,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        if self.storage[self._hash_mod(key)] is None:
+            self.storage[self._hash_mod(key)]=LinkedPair(key,value)
+        elif self._retrieve(key) is not None:
+            self._retrieve(key).value = value
+        else:
+            lp = self.storage[self._hash_mod(key)]
+            while lp.next is not None:
+                lp = lp.next
+            lp.next=(LinkedPair(key,value))
 
 
 
@@ -63,8 +70,33 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        s = self._hash_mod(key)
+        lp = self.storage[s]
+        if lp.key == key:
+            self.storage[s] = lp.next
+            return
+        elif lp is not None:
+            while lp.key !=key:
+                try:
+                    if lp.next.key == key:
+                        lp.next = lp.next.next
+                except:
+                    lp = lp.next
+                else:
+                    return
+        else:
+            return
 
+    def _retrieve(self,key):
+        s = self._hash_mod(key)
+        lp = self.storage[s]
+        if lp is not None:
+            while lp.key != key:
+                if lp.next is not None:
+                    lp = lp.next
+                else:
+                    return None
+            return lp
 
     def retrieve(self, key):
         '''
@@ -74,8 +106,11 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
+        lp = self._retrieve(key)
+        try:
+            return lp.value
+        except:
+            return None
 
     def resize(self):
         '''
@@ -84,7 +119,19 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.capacity *= 2
+        old_storage = self.storage
+        self.storage = [None]*self.capacity
+        for i in old_storage:
+            if i is not None:
+                lp = i
+                while hasattr(lp,"key"):
+                    self.insert(lp.key,lp.value)
+                    if lp.next is not None:
+                        lp = lp.next
+                    else:
+                        break
+
 
 
 
